@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum PaperStatus {
+  UNREAD
+  READING
+  READ
+  SUMMARIZED
+}
+
+model Folder {
+  id        String   @id @default(cuid())
+  name      String
+  parentId  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  parent   Folder?  @relation("FolderToChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  children Folder[] @relation("FolderToChildren")
+  papers   Paper[]
+
+  @@index([parentId])
+}
+
+model Paper {
+  id               String      @id @default(cuid())
+  folderId         String
+  title            String
+  authors          String
+  journal          String?
+  journalAbbr      String?
+  year             Int?
+  impactFactor     Float?
+  ifYear           Int?
+  jcrQuartile      String?
+  casQuartile      String?
+  volume           String?
+  issue            String?
+  pages            String?
+  citationCount    Int?
+  doi              String?
+  sourceUrl        String?
+  pdfUrl           String?
+  tags             String
+  mainConclusion   String?
+  methods          String?
+  status           PaperStatus @default(UNREAD)
+  rating           Int?
+  notes            String?
+  abstract         String?
+  background       String?
+  researchQuestion String?
+  materials        String?
+  keyResults       String?
+  conclusion       String?
+  innovations      String?
+  limitations      String?
+  usefulIdeas      String?
+  personalNotes    String?
+  followUpIdeas    String?
+  relatedPaperIds  String
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  folder  Folder   @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  figures Figure[]
+
+  @@index([folderId, title])
+  @@index([status, year])
+  @@index([doi])
+}
+
+model Figure {
+  id          String   @id @default(cuid())
+  paperId     String
+  imageUrl    String
+  caption     String?
+  explanation String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  paper Paper @relation(fields: [paperId], references: [id], onDelete: Cascade)
+
+  @@index([paperId])
+}
