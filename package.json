@@ -20,7 +20,6 @@
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",
     "@libsql/client": "^0.17.4",
-    "@netlify/next": "^1.4.9",
     "@prisma/adapter-libsql": "^6.16.2",
     "@prisma/client": "^6.16.2",
     "@tanstack/react-table": "^8.21.3",
