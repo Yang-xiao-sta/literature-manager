@@ -53,3 +53,5 @@ reasonix.toml
 prisma/check-db.mjs
 prisma/check.sql
 prisma/seed-turso.mjs
+prisma/dev.db
+tunnel.log
