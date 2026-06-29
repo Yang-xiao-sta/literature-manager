@@ -5,10 +5,12 @@ import { useMemo, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createColumnHelper, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import Papa from "papaparse";
-import { Download, Eye, FileUp, PencilLine, Plus, Sparkles, Trash2 } from "lucide-react";
+import { Download, Eye, FileUp, FolderTree, PencilLine, Plus, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { deletePaperAction, importCsvPapersAction } from "@/actions/paper-actions";
 import { SmartImportDialog } from "@/components/paper/smart-import-dialog";
+import { AutoClassifyDialog } from "@/components/paper/auto-classify-dialog";
+import { AiSummarizeButton } from "@/components/paper/ai-summarize-button";
 import { PaperFormDialog } from "@/components/paper/paper-form-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -75,6 +77,7 @@ export function PaperTable({ papers, folderId, folderName, folderOptions }: Pape
   const [csvText, setCsvText] = useState("");
   const [csvFilename, setCsvFilename] = useState("");
   const [smartImportOpen, setSmartImportOpen] = useState(false);
+  const [classifyOpen, setClassifyOpen] = useState(false);
   const [pending, startTransition] = useTransition();
 
   const columns = useMemo(
@@ -145,6 +148,7 @@ export function PaperTable({ papers, folderId, folderName, folderOptions }: Pape
               <Eye className="mr-1 h-3.5 w-3.5" />
               查看总结
             </Link>
+            <AiSummarizeButton paperId={row.original.id} hasAbstract={!!row.original.abstract} variant="table" />
             <button
               className="inline-flex items-center rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
               onClick={() => {
@@ -277,6 +281,10 @@ export function PaperTable({ papers, folderId, folderName, folderOptions }: Pape
                 <Sparkles className="mr-1 h-4 w-4" />
                 智能导入
               </Button>
+              <Button variant="secondary" onClick={() => setClassifyOpen(true)} disabled={!folderId}>
+                <FolderTree className="mr-1 h-4 w-4" />
+                一键整理
+              </Button>
               <Button variant="secondary" onClick={() => setImportOpen(true)} disabled={!folderId}>
                 <FileUp className="mr-1 h-4 w-4" />
                 导入 CSV
@@ -337,6 +345,11 @@ export function PaperTable({ papers, folderId, folderName, folderOptions }: Pape
           } as PaperFormValues);
           setPaperDialogOpen(true);
         }}
+      />
+
+      <AutoClassifyDialog
+        open={classifyOpen}
+        onClose={() => setClassifyOpen(false)}
       />
             </div>
           </div>

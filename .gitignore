@@ -39,3 +39,17 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Temp files
+cloudflared.exe
+cf-*.txt
+auto-start.ps1
+
+# IDE / tools
+.reasonix/
+reasonix.toml
+
+# Dev scripts
+prisma/check-db.mjs
+prisma/check.sql
+prisma/seed-turso.mjs

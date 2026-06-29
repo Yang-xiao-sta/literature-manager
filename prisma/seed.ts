@@ -1,6 +1,5 @@
-import { PaperStatus, PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { PaperStatus } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 
 type FolderSeed = {
   name: string;

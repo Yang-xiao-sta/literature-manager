@@ -3,12 +3,19 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 function resolveDatabaseUrl() {
+  // 优先使用 TURSO_DATABASE_URL（远程 Turso 数据库）
+  const tursoUrl = process.env.TURSO_DATABASE_URL;
+  if (tursoUrl) {
+    return tursoUrl;
+  }
+
   const rawUrl = process.env.DATABASE_URL ?? "file:./dev.db";
 
   if (!rawUrl.startsWith("file:./") && !rawUrl.startsWith("file:../")) {
     return rawUrl;
   }
 
+  // 本地 SQLite 文件：将相对路径转为绝对路径
   const prismaDir = path.dirname(fileURLToPath(import.meta.url));
   const relativeFilePath = rawUrl.replace(/^file:/, "");
   const absolutePath = path.resolve(prismaDir, relativeFilePath);
@@ -18,6 +25,7 @@ function resolveDatabaseUrl() {
 
 const client = createClient({
   url: resolveDatabaseUrl(),
+  authToken: process.env.TURSO_AUTH_TOKEN,
 });
 
 const statements = [
@@ -28,8 +36,7 @@ const statements = [
       name TEXT NOT NULL,
       parentId TEXT,
       createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      CONSTRAINT Folder_parentId_fkey FOREIGN KEY (parentId) REFERENCES Folder(id) ON DELETE CASCADE ON UPDATE CASCADE
+      updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
     )
   `,
   `
@@ -72,7 +79,7 @@ const statements = [
       relatedPaperIds TEXT NOT NULL,
       createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
       updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      CONSTRAINT Paper_folderId_fkey FOREIGN KEY (folderId) REFERENCES Folder(id) ON DELETE CASCADE ON UPDATE CASCADE
+      FOREIGN KEY (folderId) REFERENCES Folder(id) ON DELETE CASCADE
     )
   `,
   `
@@ -84,7 +91,7 @@ const statements = [
       explanation TEXT,
       createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
       updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      CONSTRAINT Figure_paperId_fkey FOREIGN KEY (paperId) REFERENCES Paper(id) ON DELETE CASCADE ON UPDATE CASCADE
+      FOREIGN KEY (paperId) REFERENCES Paper(id) ON DELETE CASCADE
     )
   `,
   "CREATE INDEX IF NOT EXISTS Folder_parentId_idx ON Folder(parentId)",
@@ -92,33 +99,6 @@ const statements = [
   "CREATE INDEX IF NOT EXISTS Paper_status_year_idx ON Paper(status, year)",
   "CREATE INDEX IF NOT EXISTS Paper_doi_idx ON Paper(doi)",
   "CREATE INDEX IF NOT EXISTS Figure_paperId_idx ON Figure(paperId)",
-  "DROP TRIGGER IF EXISTS Folder_updatedAt_trigger",
-  `
-    CREATE TRIGGER Folder_updatedAt_trigger
-    AFTER UPDATE ON Folder
-    FOR EACH ROW
-    BEGIN
-      UPDATE Folder SET updatedAt = CURRENT_TIMESTAMP WHERE id = OLD.id;
-    END
-  `,
-  "DROP TRIGGER IF EXISTS Paper_updatedAt_trigger",
-  `
-    CREATE TRIGGER Paper_updatedAt_trigger
-    AFTER UPDATE ON Paper
-    FOR EACH ROW
-    BEGIN
-      UPDATE Paper SET updatedAt = CURRENT_TIMESTAMP WHERE id = OLD.id;
-    END
-  `,
-  "DROP TRIGGER IF EXISTS Figure_updatedAt_trigger",
-  `
-    CREATE TRIGGER Figure_updatedAt_trigger
-    AFTER UPDATE ON Figure
-    FOR EACH ROW
-    BEGIN
-      UPDATE Figure SET updatedAt = CURRENT_TIMESTAMP WHERE id = OLD.id;
-    END
-  `,
 ];
 
 async function main() {

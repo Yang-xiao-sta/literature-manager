@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import { ArrowLeft, PencilLine } from "lucide-react";
+import { AiSummarizeButton } from "@/components/paper/ai-summarize-button";
 import { PaperFormDialog } from "@/components/paper/paper-form-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -102,6 +103,7 @@ export function PaperDetailClient({ paper, folderOptions, relatedTitles, initial
               </div>
             </div>
             <div className="flex gap-3">
+              <AiSummarizeButton paperId={paper.id} hasAbstract={!!paper.abstract} variant="detail" />
               <Button variant="outline" onClick={() => setEditing(true)}>
                 <PencilLine className="mr-1 h-4 w-4" />
                 编辑文献
